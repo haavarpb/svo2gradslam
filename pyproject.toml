@@ -1,3 +1,13 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:d263f07ae14bd789db27a4ffcae929adb846390e4439b187f2ebd57597a9beab
-size 225
+[project]
+name = "svo2gradslam"
+version = "0.1"
+
+[build-backend]
+requires = ["setuptools"]
+build-backed = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools]
+include-package-data = true

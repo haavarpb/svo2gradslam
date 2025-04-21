@@ -1,3 +1,13 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:3a8999282127a3d4480a6b25875b233756064c4a8c2084dc9384e43a3811c6c7
-size 319
+from svo2gradslam.svo_dataset import SVOIterableDataset, sofa_filepath
+from torch.utils.data import DataLoader
+import pyinstrument
+import tqdm
+
+
+dataset = SVOIterableDataset(str(sofa_filepath()))
+
+dl_iter = DataLoader(dataset, batch_size=10)
+
+with pyinstrument.profile():
+    for ds in tqdm.tqdm(dl_iter):
+        pass

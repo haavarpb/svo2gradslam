@@ -1,3 +1,5 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:74f403b86b30a36c0ffbfd60a70f18fb5a9e6b82dea82113479b2bf93fe158fc
-size 59
+**/__pycache__
+.pytest_cache
+.vscode
+**/*.egg-info
+typings/
