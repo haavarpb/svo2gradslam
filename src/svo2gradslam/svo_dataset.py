@@ -1,9 +1,10 @@
-from torch.utils.data import IterableDataset
+from importlib.resources import files
+from math import floor
+
+import cv2
 import pyzed.sl as sl
 import torch
-import cv2
-
-from importlib.resources import files
+from torch.utils.data import IterableDataset
 
 
 def sofa_filepath():
@@ -16,6 +17,10 @@ class SVOIterableDataset(IterableDataset):
         svo_file: str,
         sdk_verbose: int = 0,
         depth_mode: sl.DEPTH_MODE = sl.DEPTH_MODE.PERFORMANCE,
+        start=0,
+        end=None,
+        stride=1,
+        **kwargs,
     ):
         super().__init__()
 
@@ -31,13 +36,30 @@ class SVOIterableDataset(IterableDataset):
         self.runtime_params.enable_depth = True
         self.sl_image = sl.Mat(mat_type=sl.MAT_TYPE.U8_C4)
         self.sl_depth = sl.Mat()
+        self.stride = stride
+        self.start = start
+        self.end = end
 
     def __len__(self):
-        return self.camera.get_svo_number_of_frames()
+        if self.end is None:  # End is very last svo frame
+            self.end = self.camera.get_svo_number_of_frames()
+        elif self.end < 0:  # End specifies how many trailing frames to slice
+            self.end = self.camera.get_svo_number_of_frames() - abs(self.end)
+        elif self.end > 0:  # End specifies last frame
+            assert self.end < self.camera.get_svo_number_of_frames()
+        return floor((self.end - self.start) / self.stride)
+
+    def idx_2_svo_frame_num(self, idx: int):
+        return self.start + self.stride * idx
+
+    def svo_frame_num_2_idx(self, frame_num: int):
+        return floor((frame_num - self.start) / self.stride)
 
     def __iter__(self):
-        for _ in range(len(self)):
-
+        self.camera.set_svo_position(self.start)
+        for idx in range(len(self) + 1):
+            if self.stride != 1:
+                self.camera.set_svo_position(self.idx_2_svo_frame_num(idx))
             # TODO: Let users specify the resolutions. Camera calibration must be scaled accordingly
             self.camera.grab(self.runtime_params)
             self.camera.retrieve_image(self.sl_image, sl.VIEW.LEFT)
