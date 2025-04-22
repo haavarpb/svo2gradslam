@@ -69,7 +69,8 @@ class SVOIterableDataset(IterableDataset):
             cv_image = cv2.cvtColor(
                 self.sl_image.numpy(), cv2.COLOR_BGRA2RGB
             )  # TODO: Better to cache the destination?
-            torch_image = torch.tensor(cv_image)
+            torch_image = torch.tensor(cv_image, dtype=torch.float32)
+            torch_image = torch_image/torch_image.max()
             image = torch_image.unsqueeze(0)
 
             depth_image_torch = torch.from_numpy(self.sl_depth.numpy())
