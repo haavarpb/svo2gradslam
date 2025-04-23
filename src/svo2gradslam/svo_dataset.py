@@ -61,35 +61,44 @@ class SVOIterableDataset(IterableDataset):
             if self.stride != 1:
                 self.camera.set_svo_position(self.idx_2_svo_frame_num(idx))
             # TODO: Let users specify the resolutions. Camera calibration must be scaled accordingly
-            self.camera.grab(self.runtime_params)
-            self.camera.retrieve_image(self.sl_image, sl.VIEW.LEFT)
-            self.camera.retrieve_measure(self.sl_depth, measure=sl.MEASURE.DEPTH)
+            image, depth_image, intrinsics = self.get_frame()
+
+            yield (image, depth_image, intrinsics)
+
+    def get_frame(self):
+        self.camera.grab(self.runtime_params)
+        self.camera.retrieve_image(self.sl_image, sl.VIEW.LEFT)
+        self.camera.retrieve_measure(self.sl_depth, measure=sl.MEASURE.DEPTH)
 
             # Conversion
-            cv_image = cv2.cvtColor(
+        cv_image = cv2.cvtColor(
                 self.sl_image.numpy(), cv2.COLOR_BGRA2RGB
             )  # TODO: Better to cache the destination?
-            torch_image = torch.tensor(cv_image, dtype=torch.float32)
-            torch_image = torch_image/torch_image.max()
-            image = torch_image.unsqueeze(0)
+        torch_image = torch.tensor(cv_image, dtype=torch.float32)
+        torch_image = torch_image/torch_image.max()
+        image = torch_image
 
-            depth_image_torch = torch.from_numpy(self.sl_depth.numpy())
-            depth_image_torch = depth_image_torch.clamp(
+        depth_image_torch = torch.from_numpy(self.sl_depth.numpy())
+        depth_image_torch = depth_image_torch.clamp(
                 self.init_params.depth_minimum_distance,
                 self.init_params.depth_maximum_distance,
             )
-            depth_image_torch[depth_image_torch.isnan()] = 0
-            depth_image = depth_image_torch.reshape((1, *depth_image_torch.size(), 1))
+        depth_image_torch[depth_image_torch.isnan()] = 0
+        depth_image = depth_image_torch.reshape((*depth_image_torch.size(), 1))
 
-            intrinsics = torch.zeros((1, 4, 4))
-            intrinsics[0, 0, 0] = self.get_calibration_parameters_left().fx
-            intrinsics[0, 1, 1] = self.get_calibration_parameters_left().fy
-            intrinsics[0, 0, 2] = self.get_calibration_parameters_left().cx
-            intrinsics[0, 1, 2] = self.get_calibration_parameters_left().cy
-            intrinsics[0, 2, 2] = 1
-            intrinsics[0, 3, 3] = 1
+        intrinsics = torch.zeros((4, 4))
+        intrinsics[0, 0] = self.get_calibration_parameters_left().fx
+        intrinsics[1, 1] = self.get_calibration_parameters_left().fy
+        intrinsics[0, 2] = self.get_calibration_parameters_left().cx
+        intrinsics[1, 2] = self.get_calibration_parameters_left().cy
+        intrinsics[2, 2] = 1
+        intrinsics[3, 3] = 1
+        return image, depth_image, intrinsics
 
-            yield (image, depth_image, intrinsics)
+    def __getitem__(self, idx):
+        self.camera.set_svo_position(self.idx_2_svo_frame_num(idx))
+        return self.get_frame()
+
 
     def get_calibration_parameters_left(self):
         return self.get_calibration_parameters().left_cam

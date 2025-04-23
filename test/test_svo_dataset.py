@@ -43,7 +43,7 @@ def test_svo_sofa_sofa_dataset_getitem(sofa_dataset_item):
     assert isinstance(left_image, Tensor)
     assert isinstance(depth_image, Tensor)
     assert isinstance(intrinsics, Tensor)
-    assert intrinsics.size() == (1, 4, 4)
+    assert intrinsics.size() == (4, 4)
 
 
 def test_dataloader(sofa_dataset: SVOIterableDataset):
@@ -53,3 +53,6 @@ def test_dataloader(sofa_dataset: SVOIterableDataset):
     assert isinstance(depth_images, Tensor)
     assert isinstance(intrinsics, Tensor)
     assert left_images.size()[0] == 5
+
+def test_getitem(sofa_dataset):
+    img, depth, intrinsics = sofa_dataset[0]
