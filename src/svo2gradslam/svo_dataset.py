@@ -46,7 +46,7 @@ class SVOIterableDataset(IterableDataset):
         elif self.end < 0:  # End specifies how many trailing frames to slice
             self.end = self.camera.get_svo_number_of_frames() - abs(self.end)
         elif self.end > 0:  # End specifies last frame
-            assert self.end < self.camera.get_svo_number_of_frames()
+            assert self.end <= self.camera.get_svo_number_of_frames()
         return floor((self.end - self.start) / self.stride)
 
     def idx_2_svo_frame_num(self, idx: int):
