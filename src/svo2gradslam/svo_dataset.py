@@ -27,10 +27,10 @@ class SVOIterableDataset(IterableDataset):
         self.svo_file = svo_file
         self.init_params = sl.InitParameters()
         self.init_params.set_from_svo_file(self.svo_file)
-        self.init_params.sdk_verbose = sdk_verbose
+        self.init_params.sdk_verbose = sdk_verbose # Check how to shut up zed camera print logging
         self.init_params.depth_mode = depth_mode
         self.camera = sl.Camera()
-        self.camera.open(self.init_params)
+        self.camera.open(self.init_params) # TODO: Defer opening
         self.init_params = self.camera.get_init_parameters()
         self.runtime_params = sl.RuntimeParameters()
         self.runtime_params.enable_depth = True
@@ -74,7 +74,7 @@ class SVOIterableDataset(IterableDataset):
         cv_image = cv2.cvtColor(
                 self.sl_image.numpy(), cv2.COLOR_BGRA2RGB
             )  # TODO: Better to cache the destination?
-        image = cv_image
+        image = torch.tensor(cv_image, dtype=torch.float32)
 
         depth_image_torch = torch.from_numpy(self.sl_depth.numpy())
         depth_image_torch = depth_image_torch.clamp(
