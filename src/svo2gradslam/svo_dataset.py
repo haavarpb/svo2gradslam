@@ -24,6 +24,9 @@ class SVOIterableDataset(IterableDataset):
     ):
         super().__init__()
 
+        self.desired_height = 0 if "desired_height" not in kwargs.keys() else kwargs["desired_height"]
+        self.desired_width = 0 if "desired_width" not in kwargs.keys() else kwargs["desired_width"]
+        self.resolution_resizer = sl.Resolution(self.desired_width, self.desired_height)
         self.svo_file = svo_file
         self.init_params = sl.InitParameters()
         self.init_params.set_from_svo_file(self.svo_file)
@@ -39,6 +42,7 @@ class SVOIterableDataset(IterableDataset):
         self.stride = stride
         self.start = start
         self.end = end
+
 
     def __len__(self):
         if self.end is None:  # End is very last svo frame
@@ -67,8 +71,8 @@ class SVOIterableDataset(IterableDataset):
 
     def get_frame(self):
         self.camera.grab(self.runtime_params)
-        self.camera.retrieve_image(self.sl_image, sl.VIEW.LEFT)
-        self.camera.retrieve_measure(self.sl_depth, measure=sl.MEASURE.DEPTH)
+        self.camera.retrieve_image(self.sl_image, sl.VIEW.LEFT, resolution=self.resolution_resizer)
+        self.camera.retrieve_measure(self.sl_depth, measure=sl.MEASURE.DEPTH, resolution=self.resolution_resizer)
 
             # Conversion
         cv_image = cv2.cvtColor(
@@ -102,7 +106,7 @@ class SVOIterableDataset(IterableDataset):
         return self.get_calibration_parameters().left_cam
 
     def get_camera_configuration(self):
-        return self.camera.get_camera_information().camera_configuration
+        return self.camera.get_camera_information(resizer=self.resolution_resizer).camera_configuration
 
     def get_calibration_parameters(self, side: sl.SIDE = sl.SIDE.LEFT):
         return self.get_camera_configuration().calibration_parameters

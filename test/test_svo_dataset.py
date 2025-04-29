@@ -56,3 +56,20 @@ def test_dataloader(sofa_dataset: SVOIterableDataset):
 
 def test_getitem(sofa_dataset):
     img, depth, intrinsics = sofa_dataset[0]
+
+def test_resolution(sofa_svo):
+    dataset = SVOIterableDataset(str(sofa_svo), desired_height=600, desired_width=400)
+    img, depth, intrinsics = dataset[0]
+    assert img.size() == (600, 400, 3)
+    assert depth.size() == (600, 400, 1)
+
+
+    #intrinsics res (0,0) = tensor([[691.4438,   0.0000, 621.7891,   0.0000],
+        #[  0.0000, 691.4438, 345.9588,   0.0000],
+        #[  0.0000,   0.0000,   1.0000,   0.0000],
+        #[  0.0000,   0.0000,   0.0000,   1.0000]])
+
+    #intrinsics res (600, 400) = tensor([[216.0762,   0.0000, 194.3091,   0.0000],
+        #[  0.0000, 576.2032, 288.2990,   0.0000],
+        #[  0.0000,   0.0000,   1.0000,   0.0000],
+        #[  0.0000,   0.0000,   0.0000,   1.0000]])
