@@ -116,3 +116,20 @@ class SVOIterableDataset(IterableDataset):
 
     def resolution_height(self):
         return sl.get_resolution(self.init_params.camera_resolution).height
+    
+    def get_resolution(self):
+        return (self.resolution_height(), self.resolution_width())
+    
+
+
+
+from torch import Tensor
+from torch.utils.data import default_collate
+
+
+def collate_sequence(batch : list[tuple[Tensor, Tensor, Tensor]]) -> tuple[Tensor, Tensor, Tensor]:
+    c,d,i = default_collate(batch)
+    c = c.unsqueeze(0)
+    d = d.unsqueeze(0)
+    i = i[0:1].unsqueeze(0)
+    return (c,d,i)

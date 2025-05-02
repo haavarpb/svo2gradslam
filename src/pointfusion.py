@@ -2,11 +2,11 @@ from argparse import ArgumentParser
 
 import open3d as o3d
 import torch
-from torch.utils.data import DataLoader
-
 from gradslam.slam.pointfusion import PointFusion
 from gradslam.structures.rgbdimages import RGBDImages
-from svo2gradslam.svo_dataset import SVOIterableDataset, sofa_filepath
+from torch.utils.data import DataLoader
+
+from svo2gradslam.svo_dataset import SVOIterableDataset, collate_sequence, sofa_filepath
 
 parser = ArgumentParser()
 parser.add_argument(
@@ -20,7 +20,7 @@ if __name__ == "__main__":
 
     dataset = SVOIterableDataset(args.svo_file)
     # load dataset
-    loader = DataLoader(dataset=dataset, batch_size=2)
+    loader = DataLoader(dataset=dataset, batch_size=20, collate_fn=collate_sequence)
     colors, depths, intrinsics = next(iter(loader))
 
     # create rgbdimages object

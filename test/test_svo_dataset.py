@@ -3,7 +3,7 @@ from math import floor
 from torch import Tensor
 from torch.utils.data import DataLoader
 
-from svo2gradslam.svo_dataset import SVOIterableDataset
+from svo2gradslam.svo_dataset import SVOIterableDataset, collate_sequence
 
 
 def test_svo_fixture(sofa_dataset: SVOIterableDataset):
@@ -83,3 +83,11 @@ def test_shapes(sofa_dataset):
     assert i.size() == (4,4)
     assert c.size() == (*sofa_dataset.get_resolution(), 3) 
     assert d.size() == (*sofa_dataset.get_resolution(), 1)
+
+def test_collate(sofa_dataset):
+    loader = DataLoader(sofa_dataset, batch_size=5, collate_fn=collate_sequence)
+
+    c, d, i = next(iter(loader))
+    assert c.size() == (1, 5, *sofa_dataset.get_resolution(), 3)
+    assert d.size() == (1, 5, *sofa_dataset.get_resolution(), 1)
+    assert i.size() == (1, 1, 4, 4)
