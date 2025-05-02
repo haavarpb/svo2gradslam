@@ -10,6 +10,8 @@ from torch.utils.data import IterableDataset
 def sofa_filepath():
     return files("svo2gradslam").joinpath("sofa.svo")
 
+    
+
 
 class SVOIterableDataset(IterableDataset):
     def __init__(
@@ -24,12 +26,11 @@ class SVOIterableDataset(IterableDataset):
     ):
         super().__init__()
 
-        self.desired_height = 0 if "desired_height" not in kwargs.keys() else kwargs["desired_height"]
-        self.desired_width = 0 if "desired_width" not in kwargs.keys() else kwargs["desired_width"]
-        self.resolution_resizer = sl.Resolution(self.desired_width, self.desired_height)
-        self.svo_file = svo_file
+        desired_height = 0 if "desired_height" not in kwargs.keys() else kwargs["desired_height"]
+        desired_width = 0 if "desired_width" not in kwargs.keys() else kwargs["desired_width"]
+        self.resolution_resizer = sl.Resolution(desired_width, desired_height)
         self.init_params = sl.InitParameters()
-        self.init_params.set_from_svo_file(self.svo_file)
+        self.init_params.set_from_svo_file(svo_file)
         self.init_params.sdk_verbose = sdk_verbose # Check how to shut up zed camera print logging
         self.init_params.depth_mode = depth_mode
         self.camera = sl.Camera()
