@@ -73,3 +73,13 @@ def test_resolution(sofa_svo):
         #[  0.0000, 576.2032, 288.2990,   0.0000],
         #[  0.0000,   0.0000,   1.0000,   0.0000],
         #[  0.0000,   0.0000,   0.0000,   1.0000]])
+
+
+def test_shapes(sofa_dataset):
+    c, d, i = sofa_dataset[0]
+    assert c.ndim == 3
+    assert d.ndim == 3
+    assert i.ndim == 2
+    assert i.size() == (4,4)
+    assert c.size() == (*sofa_dataset.get_resolution(), 3) 
+    assert d.size() == (*sofa_dataset.get_resolution(), 1)
