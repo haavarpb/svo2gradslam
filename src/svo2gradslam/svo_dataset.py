@@ -22,6 +22,7 @@ class SVOIterableDataset(IterableDataset):
         start=0,
         end=None,
         stride=1,
+        device = 'cpu',
         **kwargs,
     ):
         super().__init__()
@@ -43,6 +44,7 @@ class SVOIterableDataset(IterableDataset):
         self.stride = stride
         self.start = start
         self.end = end
+        self.device = device
 
 
     def __len__(self):
@@ -96,7 +98,8 @@ class SVOIterableDataset(IterableDataset):
         intrinsics[1, 2] = self.get_calibration_parameters_left().cy
         intrinsics[2, 2] = 1
         intrinsics[3, 3] = 1
-        return image, depth_image, intrinsics
+
+        return image.to(self.device), depth_image.to(self.device), intrinsics.to(self.device)
 
     def __getitem__(self, idx):
         self.camera.set_svo_position(self.idx_2_svo_frame_num(idx))
