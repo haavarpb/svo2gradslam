@@ -1,0 +1,4 @@
+dataset_source: plugin
+dataset_name: svo
+plugin_name: svo_plugin
+svo_file: "~/HD720_SN10534278_15-30-00.svo2"

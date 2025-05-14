@@ -11,3 +11,6 @@ where = ["src"]
 
 [tool.setuptools]
 include-package-data = true
+
+[project.entry-points.'gradslam.plugin']
+svo_plugin = "svo2gradslam.plugin:svo_dataset"
